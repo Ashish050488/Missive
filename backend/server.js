@@ -7,9 +7,12 @@ import authRoutes from './routes/auth.routes.js'
 import messageRoutes from './routes/message.routes.js'
 import userRoutes from './routes/user.routes.js'
 import ConnectToDb from './db/Db.js'
+import cors from 'cors'
+
 
 const  app = express();
 const PORT  = process.env.PORT || 4000;
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 
 
 dotenv.config();

@@ -106,7 +106,7 @@ export const loginUser =async (req,res)=>{
 export const logoutUser = (req,res)=>{
     try {
         res.cookie('jwt',"",{maxAge:0});
-        res.status(500).json({message:"Logget out successfully"})
+        res.status(200).json({message:"Logget out successfully"})
     } catch (error) {
         console.error('Error during user signup:', error); 
         return res.status(500).json({
