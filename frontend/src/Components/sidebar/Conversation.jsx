@@ -1,9 +1,19 @@
 import React from 'react'
+import useConversation from '../../zustand/useConversation'
 
 const Conversation = ({conversation,lastIdx,emoji}) => {
+
+  const {selectedConversation,setSelectedConversations} = useConversation ()
+  const isSelected = selectedConversation?._id ===conversation._id
+
+
   return (
     <>
-    <div className='flex gap-2 items-center hover:bg-sky-500 rounded px-2 py-1 cursor-pointer'>
+    <div className={`flex gap-2 items-center hover:bg-sky-500 rounded px-2 py-1 cursor-pointer
+        ${isSelected  ? 'bg-sky-500':''}
+      `}
+      onClick={()=>setSelectedConversations(conversation)}
+      >
         <div className='avatar online'>
             <div className='w-12 rounded-full'>
                 <img src={conversation.profilePic} alt='ProfilePic' />

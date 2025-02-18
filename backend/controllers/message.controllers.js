@@ -60,7 +60,7 @@ export const getMessages = async (req, res) => {
 		if (!conversation) return res.status(200).json([]);
 
 		const messages = conversation.messages;
-        console.log(conversation);
+        // console.log(conversation);
         
 
 		res.status(200).json(messages);
