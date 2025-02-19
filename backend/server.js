@@ -8,14 +8,13 @@ import messageRoutes from './routes/message.routes.js'
 import userRoutes from './routes/user.routes.js'
 import ConnectToDb from './db/Db.js'
 import cors from 'cors'
+import { app, server } from "./socket/socket.js";
 
-
-const  app = express();
+dotenv.config();
 const PORT  = process.env.PORT || 4000;
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 
 
-dotenv.config();
 
 app.use(express.json()); // to parse incoming request from req.body
 app.use(cookieParser());
@@ -31,7 +30,7 @@ app.use('/api/users', userRoutes);
 
 
 
-app.listen(PORT ,() => { 
+server.listen(PORT ,() => { 
    ConnectToDb()
    console.log(PORT)
 });
