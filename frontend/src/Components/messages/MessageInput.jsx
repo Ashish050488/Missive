@@ -10,7 +10,6 @@ const MessageInput = () => {
     if(!message.trim()) return;
     setMessage('');
     await sendMessage(message);
-    console.timeEnd("sendMessage");
   }
   return (
     <form className='px-4 my-3' onSubmit={handleSubmit}>
