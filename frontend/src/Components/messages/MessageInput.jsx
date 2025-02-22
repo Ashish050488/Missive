@@ -7,18 +7,25 @@ const MessageInput = () => {
   const {loading,sendMessage}=useSendMessage();
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [message]);
+
 
   const handleSubmit = async (e)=>{
     e.preventDefault();
     if(!message.trim()) return;
     await sendMessage(message);
     setMessage('');
+    justSentRef.current = true;
   }
+
+  useEffect(() => {
+    if (justSentRef.current && inputRef.current) {
+      inputRef.current.focus();
+      justSentRef.current = false; // Reset the flag
+    }
+  }, [message]);
+
+
+
   return (
     <form className='px-4 my-3' onSubmit={handleSubmit}>
       <div className='w-full relative'>
