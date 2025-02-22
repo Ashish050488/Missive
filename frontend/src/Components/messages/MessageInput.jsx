@@ -8,8 +8,8 @@ const MessageInput = () => {
   const handleSubmit = async (e)=>{
     e.preventDefault();
     if(!message.trim()) return;
-    await sendMessage(message);
     setMessage('');
+    await sendMessage(message);
   }
   return (
     <form className='px-4 my-3' onSubmit={handleSubmit}>
