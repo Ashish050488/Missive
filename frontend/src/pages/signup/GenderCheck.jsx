@@ -1,35 +1,35 @@
-import React from 'react'
+import React from 'react';
 
-const GenderCheck = ({onCheckboxChange,selectedGender}) => {
+const GenderCheck = ({ onCheckboxChange, selectedGender }) => {
   return (
-    <div className='flex'>
+    <div className="flex justify-between gap-4 mt-4">
+      {/* Male Button */}
+      <button
+        type="button" // Prevents form submission
+        className={`w-1/2 py-2 rounded-lg text-white font-semibold transition-all duration-300 ${
+          selectedGender === 'male'
+            ? 'bg-blue-500 hover:bg-blue-600'
+            : 'bg-gray-700 hover:bg-gray-600'
+        }`}
+        onClick={() => onCheckboxChange('male')}
+      >
+        Male
+      </button>
 
-        <div className='form-control'>
-            <label className={`label gap-2 cursor-pointer ${selectedGender === 'male'?'selected':' '}`}>
-                <span className='label-text'>Male</span>
-                <input type="checkbox" className='checkbox border-slate-900'
-                    checked={selectedGender==='male'}
-                    onChange={()=>onCheckboxChange('male')}
-                />
-            </label>
-        </div>
-
-        
-        <div className='form-control'>
-              <div className='form-control'>
-                  <label className={`label gap-2 cursor-pointer ${selectedGender === 'female' ? 'selected':' '}`}>
-                      <span className='label-text'>Female</span>
-                      <input type="checkbox" className='checkbox border-slate-900'
-                        checked={selectedGender==='female'}
-                        onChange={()=>onCheckboxChange('female')}
-                       />
-                  </label>
-              </div>
-        </div>
-
-
+      {/* Female Button */}
+      <button
+        type="button" // Prevents form submission
+        className={`w-1/2 py-2 rounded-lg text-white font-semibold transition-all duration-300 ${
+          selectedGender === 'female'
+            ? 'bg-pink-500 hover:bg-pink-600'
+            : 'bg-gray-700 hover:bg-gray-600'
+        }`}
+        onClick={() => onCheckboxChange('female')}
+      >
+        Female
+      </button>
     </div>
-  )
-}
+  );
+};
 
-export default GenderCheck
+export default GenderCheck;

@@ -17,6 +17,8 @@ export const SocketContextProvider = ({children})=>{
 
     useEffect(()=>{
         if(authUser){
+            // https://missive.onrender.com
+            // http://localhost:5000
             const socket  = io('https://missive.onrender.com',{
                 query:{
                     userId:authUser._id

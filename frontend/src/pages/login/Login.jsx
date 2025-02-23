@@ -1,69 +1,69 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import useLogin  from '../../hooks/useLogin';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import useLogin from '../../hooks/useLogin';
 
 const Login = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const { loading, login } = useLogin();
 
-  const  [username,setUsername] = useState("");
-  const  [password,setPassword] = useState("");
-  const {loading,login}=useLogin();
-
-
-
-  const handleSubmit = async  (e)=>{
-    e.preventDefault()
-    await login(username,password)
-  }
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await login(username, password);
+  };
 
   return (
-    <div className='flex flex-col items-center justify-center min-w-96 mx-auto'>
-      <div className='h-full w-full p-6 bg-gray-800 rounded-md bg-clip-padding backdrop-filter backdrop-blur-lg bg-opacity-10 border border-gray-100'>
-        <h1 className='text-3xl font-semibold text-center text-gray-300'>Login
-          <span className='text-yellow-500' > Missive</span>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-4">
+      <div className="w-full max-w-md p-8 bg-gray-800 bg-opacity-70 backdrop-blur-md rounded-xl shadow-lg text-center border border-gray-700">
+        <h1 className="text-3xl font-bold text-gray-100">
+          Welcome to <span className="text-yellow-400">Missive</span>
         </h1>
 
-        <form onSubmit={handleSubmit}>
-
-          {/* div 1O */}
-          <div>
-            <label className='label p-2'>
-              <span className='text-base label-text'>Username</span>
-            </label>
-            <input type="text" placeholder='Enter Username' className='w-full input input-bordered h-10' 
-            value={username}
-            onChange={(e)=> setUsername(e.target.value)}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          {/* Username Input */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Username"
+              className="w-full px-4 py-3 text-gray-200 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-yellow-400 outline-none"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
-          {/* div 1C */}
 
-          {/* div 2O */}
-          <div>
-            <label className='label p-2'>
-              <span className='text-base label-text'>Password</span>
-            </label>
-            <input type="password" placeholder='Enter Password' className='w-full input input-bordered h-10'
-            value={password}
-            onChange={(e)=> setPassword(e.target.value)}
-             />
+          {/* Password Input */}
+          <div className="relative">
+            <input
+              type="password"
+              placeholder="Password"
+              className="w-full px-4 py-3 text-gray-200 bg-gray-900 border border-gray-700 rounded-lg focus:ring-2 focus:ring-yellow-400 outline-none"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
           </div>
-          {/* div 2C */}
 
-        <Link to={'/signup'} className='text-sm hover:underline hover:text-blue-600 mt-2 inline-block'>
-         {"Don't"} have an account?
-        </Link>
+          {/* Forgot Password & Signup Link */}
+          <div className="flex items-center justify-between text-sm text-gray-400">
+            <Link to="/signup" className="hover:text-yellow-400 transition">
+              Don't have an account?
+            </Link>
+            {/* <Link to="/forgot-password" className="hover:text-yellow-400 transition">
+              Forgot Password?
+            </Link> */}
+          </div>
 
-        <div>
-          <button className='btn btn-block btn-sm mt-2' disabled={loading}>
-            {loading ? <span className='loading loading-spinner'></span>:"Login"}
+          {/* Login Button */}
+          <button
+            type="submit"
+            className="w-full py-3 mt-4 font-semibold text-gray-900 bg-yellow-400 rounded-lg hover:bg-yellow-500 transition duration-300"
+            disabled={loading}
+          >
+            {loading ? 'Loading...' : 'Login'}
           </button>
-        </div>
         </form>
-
       </div>
-
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
