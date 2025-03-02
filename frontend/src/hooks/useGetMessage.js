@@ -10,10 +10,12 @@ const useGetMessage = () => {
         const getMessages = async ()=>{
             setLoading(true);
             try {
-                const res = await  fetch(`/api/message/${selectedConversation._id}`);
+                const res = await fetch(`/api/message/${selectedConversation._id}?skip=0`); 
                 const data  = await res.json()
+                console.log("Fetched messages:", data);
                 if(data.error) throw new Error(data.error)
-                    setMessages(data)
+                    
+                    setMessages(Array.isArray(data) ? data : []);
             } catch (error) {
                 toast.error(error.message)
             }finally{
@@ -22,8 +24,20 @@ const useGetMessage = () => {
         }
         if(selectedConversation?._id) getMessages();
     },[selectedConversation?._id]);
+    console.log("Current messages state:", messages);
 
-    return {messages,loading};
+    const loadMoreMessages = async () => {
+        try {
+          const res = await fetch(`/api/message/${selectedConversation._id}?skip=${messages.length}`);
+          const olderMessages = await res.json();
+          console.log("Older messages:", olderMessages);
+          setMessages((prev) => [...olderMessages, ...prev]); // Append older messages at the start
+        } catch (error) {
+          toast.error("Failed to load older messages");
+        }
+      };
+
+    return {messages,loading,loadMoreMessages};
 
 }
 

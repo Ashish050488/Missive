@@ -7,13 +7,31 @@ export const useListenMessages = ()=>{
     const {socket}= useSocketContext()
     const {messages,setMessages } = useConversation();
     
-    useEffect(()=>{
-        socket?.on('newMessage', (newMessage)=>{
+    // useEffect(()=>{
+    //     socket?.on('newMessage', (newMessage)=>{
+    //         const sound = new Audio(notification);
+    //         sound.play();
+    //         setMessages([...messages,newMessage])
+    //     })
+
+    //     return ()=> socket?.off('newMessage')
+    // },[socket,setMessages,messages])
+
+
+    useEffect(() => {
+        const handleNewMessage = (newMessage) => {
             const sound = new Audio(notification);
             sound.play();
-            setMessages([...messages,newMessage])
-        })
+            
+            setMessages((prevMessages) => [...prevMessages, newMessage]);
+        };
 
-        return ()=> socket?.off('newMessage')
-    },[socket,setMessages,messages])
+        socket?.on('newMessage', handleNewMessage);
+
+        return () => {
+            socket?.off('newMessage', handleNewMessage);
+        };
+
+    }, [socket, setMessages]); 
+
 }

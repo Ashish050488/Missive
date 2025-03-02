@@ -12,6 +12,8 @@ const io = new Server(server,{
         origin:['http://localhost:3000'],
         methods:['GET','POST']
     },
+    pingInterval: 25000,  // Default is 25000ms (25 sec)
+    pingTimeout: 60000,   // Default is 60000ms (60 sec)
 })
 
 export const getReceiverSocketId = (receiverId)=>{

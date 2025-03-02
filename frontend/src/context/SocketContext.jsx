@@ -21,7 +21,8 @@ export const SocketContextProvider = ({children})=>{
             // http://localhost:5000
             const socket  = io('https://missive.onrender.com',{
                 query:{
-                    userId:authUser._id
+                    userId:authUser._id,
+                    transports: ['websocket'],
                 }
             });
 
