@@ -1,7 +1,8 @@
 import Conversation from '../models/conversation.model.js'
 import Message from '../models/message.model.js'
 import User from '../models/user.model.js';
-import { getReceiverSocketId, io } from '../socket/socket.js';
+// getReceiverSocketId is removed as per new requirements, io is kept for room-based emission
+import { io } from '../socket/socket.js';
 
 
 export const sendMessage = async (req, res) => {
@@ -38,17 +39,17 @@ export const sendMessage = async (req, res) => {
 			conversation.messages.push(newMessage._id);
 		}
 
+		// TODO: Scalability: For very high message volumes per conversation, consider refactoring.
+		// Storing all message IDs in Conversation.messages array might become a bottleneck.
+		// A separate query for messages, perhaps paginated, would be more scalable.
+		// Note: The above 'if (newMessage)' block was already present and handled the push.
+		// The previous diff incorrectly duplicated it. This is the corrected structure.
+
 		// Save both conversation and message
 		await Promise.all([conversation.save(), newMessage.save()]);
 
-
-
-		// Socket functionality
-		const receiverSocketId  =  getReceiverSocketId(receiverId);
-		if(receiverSocketId){
-			// io.to(<socket_id>).emit() is used to send events to specific client
-			io.to(receiverSocketId).emit('newMessage',newMessage)
-		}
+		// Socket functionality: Emit message to the recipient's room (named after their userId)
+		io.to(receiverId).emit('newMessage', newMessage);
 
 		res.status(201).json(newMessage);
 	} catch (error) {
