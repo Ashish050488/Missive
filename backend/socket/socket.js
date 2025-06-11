@@ -3,6 +3,8 @@ import http from 'http';
 import express from 'express';
 import { createClient } from 'redis';
 import { createAdapter } from '@socket.io/redis-adapter';
+import GroupConversation from '../models/groupConversation.model.js'; // Import GroupConversation model
+import mongoose from "mongoose"; // Import mongoose for ObjectId validation
 
 
 
@@ -56,6 +58,23 @@ io.on('connection', async (socket) => {
         socket.join(userId); // User joins a room named after their userId
         console.log(`Socket ${socket.id} joined room ${userId}`);
 
+        // Join rooms for each group the user is a participant of
+        try {
+            if (mongoose.Types.ObjectId.isValid(userId)) { // Ensure userId is valid before querying
+                const userGroups = await GroupConversation.find({ participants: userId }).select("_id name");
+                userGroups.forEach(group => {
+                    const groupRoom = 'group_' + group._id.toString();
+                    socket.join(groupRoom);
+                    console.log(`Socket ${socket.id} (User ${userId}) joined group room: ${groupRoom} (Group Name: ${group.name})`);
+                });
+            } else {
+                console.warn(`Invalid userId format: ${userId}, cannot fetch groups.`);
+            }
+        } catch (error) {
+            console.error(`Error fetching or joining group rooms for user ${userId}:`, error);
+        }
+
+        // Online presence handling (remains the same)
         try {
             const alreadyOnline = await redisClient.sismember('online_users', userId);
             await redisClient.sadd('online_users', userId);

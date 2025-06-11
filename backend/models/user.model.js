@@ -24,6 +24,21 @@ const userSchema = new mongoose.Schema({
         type:String,
         default:''
     },
+    bio: {
+        type: String,
+        default: ''
+    },
+    statusMessage: { // User-settable status message
+        type: String,
+        default: ''
+    },
+    lastSeen: {
+        type: Date,
+        default: Date.now
+    },
+    // Note: Group associations for a user are not stored directly in the User model.
+    // They can be queried by finding GroupConversation documents where this user's ID
+    // is present in the 'participants' array.
 },{timestamps:true})
 
 const User = mongoose.model('User',userSchema);
