@@ -28,14 +28,28 @@ export const SocketContextProvider = ({children})=>{
 
             setSocket(socket);
 
-            // socket.on() is used to listen to the events. can be used both on client and server side
-            socket.on('getOnlineUsers',(users)=>{
+            // Listener for the initial list of online users
+            socket.on('current_online_users', (users) => {
                 setOnlineUser(users);
-            })
+            });
 
+            // Listener for when a new user comes online
+            socket.on('user_online', (userId) => {
+                setOnlineUser(prevOnlineUsers => {
+                    // Ensure no duplicates, though the server-side logic with Redis Sets should prevent this
+                    if (!prevOnlineUsers.includes(userId)) {
+                        return [...prevOnlineUsers, userId];
+                    }
+                    return prevOnlineUsers;
+                });
+            });
 
+            // Listener for when a user goes offline
+            socket.on('user_offline', (userId) => {
+                setOnlineUser(prevOnlineUsers => prevOnlineUsers.filter(id => id !== userId));
+            });
 
-            return()=>{
+            return () => {
                 socket.close();
             }
 
