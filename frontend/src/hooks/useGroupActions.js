@@ -164,20 +164,26 @@ export const useAddMembers = () => {
     const [loading, setLoading] = useState(false);
     const { userGroups, setUserGroups, selectedConversation, setSelectedConversations } = useConversation();
 
-    const addMembers = async (groupId, memberIds) => {
+    const addMembers = async (groupId, memberUsernames) => { // Renamed memberIds to memberUsernames
         setLoading(true);
         try {
-            if (!memberIds || memberIds.length === 0) throw new Error("No members selected to add.");
+            if (!memberUsernames || memberUsernames.length === 0) throw new Error("No usernames provided to add."); // Updated validation message
 
             const res = await fetch(BaseURL+`/api/groups/${groupId}/members`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ members: memberIds }),
+                body: JSON.stringify({ memberUsernames: memberUsernames }), // Send memberUsernames
             });
-            const data = await res.json(); // Expects { message, group }
+            const data = await res.json(); // Expects { message, group, addedMembers, alreadyParticipantUsernames }
 
             if (!res.ok || data.error) {
-                throw new Error(data.error || `Failed to add members`);
+                // The backend might send a more specific error in data.error (e.g. users not found, or all are existing)
+                // It might also send data.alreadyParticipantUsernames if that's the primary issue.
+                let errorMessage = data.error || `Failed to add members`;
+                if (data.alreadyParticipantUsernames && data.alreadyParticipantUsernames.length > 0 && !data.error) {
+                    errorMessage = `Users ${data.alreadyParticipantUsernames.join(", ")} are already participants. No new members were added.`;
+                }
+                throw new Error(errorMessage);
             }
 
             const updatedGroup = {...data.group, isDM: false};

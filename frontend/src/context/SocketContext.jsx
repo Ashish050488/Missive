@@ -19,7 +19,7 @@ export const SocketContextProvider = ({children})=>{
         if(authUser){
             // https://missive.onrender.com
             // http://localhost:5000
-            const socket  = io('https://missive.onrender.com',{
+            const socket  = io('http://localhost:5000',{ // Changed to local development URL
                 query:{
                     userId:authUser._id,
                     transports: ['websocket'],

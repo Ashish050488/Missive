@@ -1,7 +1,6 @@
 import React from 'react'
 import useConversation from '../../zustand/useConversation'
 import { useSocketContext } from '../../context/SocketContext'
-import LazyImage from '../common/LazyImage'; // Import LazyImage
 
 const Conversation = ({conversation,lastIdx,emoji}) => {
 
@@ -20,12 +19,7 @@ const Conversation = ({conversation,lastIdx,emoji}) => {
       >
         <div className={`avatar ${isOnline ? 'online':''}`}>
             <div className='w-12 rounded-full'>
-                <LazyImage
-                    src={conversation.profilePic}
-                    alt='ProfilePic'
-                    className='w-12 rounded-full'
-                    placeholderSrc='/default-avatar.png' // Example placeholder path
-                />
+                <img src={conversation.profilePic} alt='ProfilePic' />
             </div>
         </div>      
 

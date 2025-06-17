@@ -1,9 +1,7 @@
 import React from 'react'
-import React from 'react' // Added React import for completeness
 import {useAuthContext} from '../../context/AuthContext'
 import useConversation from '../../zustand/useConversation';
 import {extractTime} from '../../utils/extractTime'
-import LazyImage from '../common/LazyImage'; // Import LazyImage
 
 const Message = ({message}) => {
   const {authUser} = useAuthContext();
@@ -18,12 +16,7 @@ const Message = ({message}) => {
     <div className={`chat ${chatClassName}`}>
       <div className='chat-image avatar'>
         <div className='w-10 rounded-full'>
-          <LazyImage
-            src={profilePic}
-            alt="User Avatar"
-            className='w-10 rounded-full'
-            placeholderSrc='/default-avatar.png'
-          />
+          <img src={profilePic} alt="Tailwind CSS chat bubble component" />
         </div>
       </div>
 

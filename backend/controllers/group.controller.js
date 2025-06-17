@@ -220,11 +220,11 @@ export const updateGroupName = async (req, res) => {
 export const addMembersToGroup = async (req, res) => {
     try {
         const { groupId } = req.params;
-        const { members } = req.body; // Array of user IDs to add
-        const userId = req.user._id; // Logged-in user, must be an admin
+        const { memberUsernames } = req.body; // Expect memberUsernames (array of strings)
+        const adminUserId = req.user._id; // Logged-in user, must be an admin
 
-        if (!members || !Array.isArray(members) || members.length === 0) {
-            return res.status(400).json({ error: "Members array is required and cannot be empty." });
+        if (!memberUsernames || !Array.isArray(memberUsernames) || memberUsernames.length === 0) {
+            return res.status(400).json({ error: "Member usernames array is required and cannot be empty." });
         }
         if (!mongoose.Types.ObjectId.isValid(groupId)) {
             return res.status(400).json({ error: "Invalid group ID format." });
@@ -235,78 +235,74 @@ export const addMembersToGroup = async (req, res) => {
             return res.status(404).json({ error: "Group not found." });
         }
 
-        if (!group.admins.map(adminId => adminId.toString()).includes(userId.toString())) {
+        if (!group.admins.map(adminId => adminId.toString()).includes(adminUserId.toString())) {
             return res.status(403).json({ error: "Forbidden. Only admins can add members." });
         }
 
-        // Validate member IDs and check if they are valid users
-        const validUserIdsToAdd = [];
-        const invalidUserIds = [];
-        const alreadyParticipantIds = [];
+        // Resolve usernames to user IDs
+        const usersToAdd = await User.find({ username: { $in: memberUsernames } }).select('_id username');
 
-        const users = await User.find({ _id: { $in: members } }).select("_id");
-        const foundUserIds = users.map(u => u._id.toString());
+        const foundUsernames = usersToAdd.map(u => u.username);
+        const notFoundUsernames = memberUsernames.filter(username => !foundUsernames.includes(username));
 
-        for (const memberId of members) {
-            if (!mongoose.Types.ObjectId.isValid(memberId)) {
-                invalidUserIds.push(`${memberId} (invalid format)`);
-                continue;
-            }
-            if (!foundUserIds.includes(memberId.toString())) {
-                invalidUserIds.push(memberId);
-                continue;
-            }
-            if (group.participants.map(pId => pId.toString()).includes(memberId.toString())) {
-                alreadyParticipantIds.push(memberId);
-                continue;
-            }
-            validUserIdsToAdd.push(new mongoose.Types.ObjectId(memberId));
-        }
-
-        if (invalidUserIds.length > 0) {
+        if (notFoundUsernames.length > 0) {
             return res.status(400).json({
-                error: `Invalid or non-existent user IDs provided: ${invalidUserIds.join(", ")}.`
-            });
-        }
-        if (validUserIdsToAdd.length === 0) {
-            return res.status(400).json({
-                error: "No new valid members to add. All provided users might already be participants or invalid.",
-                alreadyParticipantIds: alreadyParticipantIds
+                error: `The following usernames were not found: ${notFoundUsernames.join(", ")}. Please ensure usernames are correct.`
             });
         }
 
-        group.participants.push(...validUserIdsToAdd);
+        const userIdsToAdd = usersToAdd.map(u => u._id);
+        const alreadyParticipantUsernames = [];
+        const finalUserIdsToPush = [];
+
+        for (const user of usersToAdd) {
+            if (group.participants.map(pId => pId.toString()).includes(user._id.toString())) {
+                alreadyParticipantUsernames.push(user.username);
+            } else {
+                finalUserIdsToPush.push(user._id); // This is already an ObjectId
+            }
+        }
+
+        if (finalUserIdsToPush.length === 0) {
+            let message = "No new members to add.";
+            if (alreadyParticipantUsernames.length > 0) {
+                message += ` Users ${alreadyParticipantUsernames.join(", ")} are already participants.`;
+            }
+            return res.status(400).json({
+                error: message,
+                alreadyParticipantUsernames: alreadyParticipantUsernames // Send back for client info
+            });
+        }
+
+        group.participants.push(...finalUserIdsToPush);
         await group.save();
 
         const populatedGroup = await GroupConversation.findById(groupId).populate([
-            { path: "participants", select: "fullName username profilePic _id" }, // ensure _id for client processing
+            { path: "participants", select: "fullName username profilePic _id" },
             { path: "admins", select: "fullName username profilePic _id" },
             {
-                path: "lastMessage", // Populate lastMessage as it might be relevant for client update
+                path: "lastMessage",
                 select: "message senderId createdAt messageType",
                 populate: { path: "senderId", select: "fullName username profilePic _id" }
             }
         ]);
 
-        // Fetch details of newly added members to send in the event to their personal rooms
-        const addedMemberDetails = await User.find({ _id: { $in: validUserIdsToAdd } }).select("fullName username profilePic _id");
+        // Fetch details of newly added members (using finalUserIdsToPush) to send in the event
+        const addedMemberDetails = await User.find({ _id: { $in: finalUserIdsToPush } }).select("fullName username profilePic _id");
 
         // Emit general update to the group room
         io.to('group_' + groupId.toString()).emit('groupMembersUpdated', {
             groupId,
-            participants: populatedGroup.participants, // Send full updated participant list
+            participants: populatedGroup.participants,
             action: 'added',
-            addedMemberIds: validUserIdsToAdd.map(id => id.toString()), // Send IDs of who were added
+            addedMemberIds: finalUserIdsToPush.map(id => id.toString()),
             // Consider sending addedMemberDetails if client needs immediate full details of new members
         });
 
         // Emit specific event to each newly added user's personal room
         addedMemberDetails.forEach(member => {
-            io.to(member._id.toString()).emit('addedToGroup', populatedGroup); // Send the whole populated group object
+            io.to(member._id.toString()).emit('addedToGroup', populatedGroup);
 
-            // Instruct newly added, online user's socket(s) to join the group room
-            // This requires access to the main 'io' instance and its sockets.
-            // This is a simplified attempt; a robust solution might use a Redis-backed list of user sockets.
             const userSockets = io.sockets.adapter.rooms.get(member._id.toString());
             if (userSockets) {
                 userSockets.forEach(socketId => {
@@ -319,13 +315,16 @@ export const addMembersToGroup = async (req, res) => {
             }
         });
 
-        res.status(200).json({ message: "Members added successfully.", group: populatedGroup, addedMembers: validUserIdsToAdd, alreadyParticipantIds });
+        res.status(200).json({
+            message: "Members added successfully.",
+            group: populatedGroup,
+            addedMembers: addedMemberDetails, // Send details of members actually added
+            alreadyParticipantUsernames // Send usernames of those already in group
+        });
 
     } catch (error) {
         console.error("Error in addMembersToGroup controller: ", error.message);
-        if (error.name === "CastError") {
-            return res.status(400).json({ error: "Invalid ID format provided for members." });
-        }
+        // CastError check might be less relevant now as primary input is usernames
         res.status(500).json({ error: "Internal server error" });
     }
 };
