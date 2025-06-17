@@ -1,5 +1,6 @@
 import { useState } from "react"
 import useConversation from "../zustand/useConversation";
+import { BaseURL } from "../Api/Urls";
 
 const useSendMessage = () => {
     const [loading, setLoading] = useState(false);
@@ -14,11 +15,11 @@ const useSendMessage = () => {
             let bodyPayload = { message: messageContent }; // Default for DMs
 
             if (selectedConversation.isDM === false) { // Group conversation
-                url = `/api/groups/${selectedConversation._id}/messages`;
+                url = `${BaseURL}/api/groups/${selectedConversation._id}/messages`;
                 // Backend for group messages expects { message, messageType (optional) }
                 // We are sending only text messages from here for now.
             } else { // DM conversation
-                url = `/api/message/send/${selectedConversation._id}`;
+                url = `${BaseURL}/api/message/send/${selectedConversation._id}`;
             }
 
             const res = await fetch(url, {
@@ -26,6 +27,7 @@ const useSendMessage = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify(bodyPayload)
             });
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import useConversation from '../zustand/useConversation';
 import toast from 'react-hot-toast'
+import { BaseURL } from '../Api/Urls';
 
 const useGetMessage = () => {
     const [loading,setLoading] = useState(false);
@@ -13,11 +14,13 @@ const useGetMessage = () => {
             try {
                 let url = '';
                 if (selectedConversation.isDM === false) { // Group conversation
-                    url = `/api/groups/${selectedConversation._id}/messages?page=1&limit=30`; // Use page/limit for groups
+                    url = BaseURL`/api/groups/${selectedConversation._id}/messages?page=1&limit=30`; // Use page/limit for groups
                 } else { // DM conversation
-                    url = `/api/message/${selectedConversation._id}?skip=0`; // Existing DM endpoint with skip
+                    url =BaseURL+ `/api/message/${selectedConversation._id}?skip=0`; // Existing DM endpoint with skip
                 }
-                const res = await fetch(url);
+                const res = await fetch(url,{
+    credentials: 'include',
+                });
                 const data  = await res.json();
                 if(data.error) throw new Error(data.error);
 
@@ -48,13 +51,15 @@ const useGetMessage = () => {
                 const limit = 30;
                 const currentPage = Math.floor(messages.length / limit) + 1;
                 nextPageOrSkip = currentPage + 1;
-                url = `/api/groups/${selectedConversation._id}/messages?page=${nextPageOrSkip}&limit=${limit}`;
+                url = BaseURL+`/api/groups/${selectedConversation._id}/messages?page=${nextPageOrSkip}&limit=${limit}`;
             } else { // DM conversation
                 nextPageOrSkip = messages.length;
-                url = `/api/message/${selectedConversation._id}?skip=${nextPageOrSkip}`;
+                url = BaseURL+`/api/message/${selectedConversation._id}?skip=${nextPageOrSkip}`;
             }
 
-            const res = await fetch(url);
+            const res = await fetch(url,{
+    credentials: 'include',
+                });
             const olderMessages = await res.json();
             if(olderMessages.error) throw new Error(olderMessages.error);
 

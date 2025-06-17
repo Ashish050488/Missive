@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import useConversation from '../zustand/useConversation';
+import { BaseURL } from '../Api/Urls';
 // import { useAuthContext } from '../context/AuthContext'; // May not be needed if actions rely on existing state
 
 // Hook for creating a new group
@@ -15,7 +16,7 @@ export const useCreateGroup = () => {
             if (!name.trim()) throw new Error("Group name cannot be empty.");
             if (!participants || participants.length === 0) throw new Error("Please select participants for the group.");
 
-            const res = await fetch('/api/groups', {
+            const res = await fetch(BaseURL+'/api/groups', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name, participants }),
@@ -50,7 +51,7 @@ export const useFetchUserGroups = () => {
     const fetchUserGroups = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/groups');
+            const res = await fetch(BaseURL+'/api/groups');
             const data = await res.json();
 
             if (!res.ok || data.error) {
@@ -82,7 +83,7 @@ export const useUpdateGroupDetails = () => {
         let updatedData = null;
         try {
             if (name !== undefined) {
-                const resName = await fetch(`/api/groups/${groupId}/name`, {
+                const resName = await fetch(BaseURL+`/api/groups/${groupId}/name`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name }),
@@ -93,7 +94,7 @@ export const useUpdateGroupDetails = () => {
                 toast.success("Group name updated!");
             }
             if (groupIcon !== undefined) {
-                const resIcon = await fetch(`/api/groups/${groupId}/icon`, {
+                const resIcon = await fetch(BaseURL+`/api/groups/${groupId}/icon`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ groupIcon }),
@@ -134,7 +135,7 @@ export const useDeleteGroup = () => {
     const deleteGroup = async (groupId) => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/groups/${groupId}`, { method: 'DELETE' });
+            const res = await fetch(BaseURL+`/api/groups/${groupId}`, { method: 'DELETE' });
             const data = await res.json(); // Expects { message: "..." } on success
 
             if (!res.ok || data.error) {
@@ -168,7 +169,7 @@ export const useAddMembers = () => {
         try {
             if (!memberIds || memberIds.length === 0) throw new Error("No members selected to add.");
 
-            const res = await fetch(`/api/groups/${groupId}/members`, {
+            const res = await fetch(BaseURL+`/api/groups/${groupId}/members`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ members: memberIds }),
@@ -211,7 +212,7 @@ export const useRemoveMember = () => {
     const removeMember = async (groupId, userIdToRemove) => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/groups/${groupId}/members/${userIdToRemove}`, {
+            const res = await fetch(BaseURL+`/api/groups/${groupId}/members/${userIdToRemove}`, {
                 method: 'DELETE',
             });
             const data = await res.json(); // Expects { message, group } or { message } if group deleted
@@ -259,8 +260,9 @@ export const useLeaveGroup = () => {
     const leaveGroup = async (groupId) => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/groups/${groupId}/members/leave`, {
+            const res = await fetch(BaseURL+`/api/groups/${groupId}/members/leave`, {
                 method: 'POST',
+                credentials: 'include'
             });
             const data = await res.json(); // Expects { message }
 
