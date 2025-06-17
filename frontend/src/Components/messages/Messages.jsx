@@ -3,9 +3,11 @@ import Message from './Message'
 import  MessageSkeleton from '../../skleton/MessageSkeleton'
 import useGetMessage from '../../hooks/useGetMessage'
 import {useListenMessages} from '../../hooks/useListenMessages'
+import useConversation from '../../zustand/useConversation';
 
 const Messages = () => {
-  const {messages,loading,loadMoreMessages } =  useGetMessage();
+  const { loading, loadMoreMessages } =  useGetMessage();
+  const { messages } = useConversation();
 
   useListenMessages()
 
@@ -24,10 +26,6 @@ const Messages = () => {
       loadMoreMessages(); 
     }
   };
-  console.log("Messages before rendering:", messages); // Debugging line
-  console.log("Type of messages:", typeof messages); // Debugging line
-
-  
 
   return (
     <div className='px-4 flex-1 overflow-auto' ref={messagesContainerRef} onScroll={handleScroll}>

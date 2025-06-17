@@ -76,7 +76,7 @@ const useGetMessage = () => {
         }
       };
 
-    return {messages,loading,loadMoreMessages};
+    return {loading,loadMoreMessages};
 
 }
 

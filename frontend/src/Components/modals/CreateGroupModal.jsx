@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-// import useCreateGroup from '../../hooks/useCreateGroup'; // Example hook for API call
+import useCreateGroup from '../../hooks/useCreateGroup'; // Example hook for API call
 
 const CreateGroupModal = ({ isOpen, onClose }) => {
     const [groupName, setGroupName] = useState('');
     const [participantsInput, setParticipantsInput] = useState(''); // Simple comma-separated IDs/usernames for now
-    // const { loading, createGroup } = useCreateGroup(); // Example
+    const { loading, createGroup } = useCreateGroup(); // Example
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,8 +21,8 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
         }
 
         console.log("Creating group with:", { groupName, participantIds });
-        // await createGroup({ name: groupName, participants: participantIds });
-        // onClose(); // Close modal on success
+        await createGroup({ name: groupName, participants: participantIds });
+        onClose(); // Close modal on success
     };
 
     if (!isOpen) return null;
@@ -67,17 +67,16 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
                             type="button"
                             className="btn btn-ghost text-gray-300"
                             onClick={onClose}
-                            // disabled={loading}
+                            disabled={loading}
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             className="btn btn-primary"
-                            // disabled={loading || !groupName.trim() || !participantsInput.trim()}
+                            disabled={loading || !groupName.trim() || !participantsInput.trim()}
                         >
-                            {/* {loading ? <span className="loading loading-spinner"></span> : "Create Group"} */}
-                            Create Group
+                            {loading ? <span className="loading loading-spinner"></span> : "Create Group"}
                         </button>
                     </div>
                 </form>
