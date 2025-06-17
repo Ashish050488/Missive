@@ -15,11 +15,14 @@ export const useCreateGroup = () => {
             // Basic validation (can be more extensive)
             if (!name.trim()) throw new Error("Group name cannot be empty.");
             if (!participants || participants.length === 0) throw new Error("Please select participants for the group.");
-
+            const participantIds = participants.map(p =>
+            typeof p === 'object' && p._id ? p._id : p
+        );
             const res = await fetch(BaseURL+'/api/groups', {
                 method: 'POST',
+                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, participants }),
+                body: JSON.stringify({ name, participants: participantIds }),
             });
 
             const data = await res.json();
@@ -51,7 +54,9 @@ export const useFetchUserGroups = () => {
     const fetchUserGroups = async () => {
         setLoading(true);
         try {
-            const res = await fetch(BaseURL+'/api/groups');
+            const res = await fetch(BaseURL+'/api/groups',{
+                 credentials: 'include',
+            });
             const data = await res.json();
 
             if (!res.ok || data.error) {
@@ -83,8 +88,9 @@ export const useUpdateGroupDetails = () => {
         let updatedData = null;
         try {
             if (name !== undefined) {
-                const resName = await fetch(BaseURL+`/api/groups/${groupId}/name`, {
+                const resName = await fetch(`${BaseURL}/api/groups/${groupId}/name`, {
                     method: 'PUT',
+                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name }),
                 });
@@ -94,8 +100,9 @@ export const useUpdateGroupDetails = () => {
                 toast.success("Group name updated!");
             }
             if (groupIcon !== undefined) {
-                const resIcon = await fetch(BaseURL+`/api/groups/${groupId}/icon`, {
+                const resIcon = await fetch(`${BaseURL}/api/groups/${groupId}/icon`, {
                     method: 'PUT',
+                    credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ groupIcon }),
                 });
@@ -106,7 +113,6 @@ export const useUpdateGroupDetails = () => {
             }
 
             if (updatedData) {
-                // Update userGroups list
                 const updatedGroups = userGroups.map(g => g._id === groupId ? { ...g, ...updatedData, isDM: false } : g);
                 setUserGroups(updatedGroups);
 
@@ -135,7 +141,7 @@ export const useDeleteGroup = () => {
     const deleteGroup = async (groupId) => {
         setLoading(true);
         try {
-            const res = await fetch(BaseURL+`/api/groups/${groupId}`, { method: 'DELETE' });
+            const res = await fetch(`${BaseURL}/api/groups/${groupId}` ,{ credentials: 'include'},{ method: 'DELETE' });
             const data = await res.json(); // Expects { message: "..." } on success
 
             if (!res.ok || data.error) {
@@ -169,8 +175,9 @@ export const useAddMembers = () => {
         try {
             if (!memberIds || memberIds.length === 0) throw new Error("No members selected to add.");
 
-            const res = await fetch(BaseURL+`/api/groups/${groupId}/members`, {
+            const res = await fetch(`${BaseURL}/api/groups/${groupId}/members`, {
                 method: 'POST',
+                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ members: memberIds }),
             });
@@ -212,8 +219,9 @@ export const useRemoveMember = () => {
     const removeMember = async (groupId, userIdToRemove) => {
         setLoading(true);
         try {
-            const res = await fetch(BaseURL+`/api/groups/${groupId}/members/${userIdToRemove}`, {
+            const res = await fetch(`${BaseURL}/api/groups/${groupId}/members/${userIdToRemove}`, {
                 method: 'DELETE',
+                credentials: 'include',
             });
             const data = await res.json(); // Expects { message, group } or { message } if group deleted
 
@@ -260,7 +268,7 @@ export const useLeaveGroup = () => {
     const leaveGroup = async (groupId) => {
         setLoading(true);
         try {
-            const res = await fetch(BaseURL+`/api/groups/${groupId}/members/leave`, {
+            const res = await fetch(`${BaseURL}/api/groups/${groupId}/members/leave`, {
                 method: 'POST',
                 credentials: 'include'
             });

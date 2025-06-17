@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import useCreateGroup from '../../hooks/useCreateGroup'; // Example hook for API call
+import {useCreateGroup} from '../../hooks/useGroupActions'; // Example hook for API call
 
 const CreateGroupModal = ({ isOpen, onClose }) => {
     const [groupName, setGroupName] = useState('');
